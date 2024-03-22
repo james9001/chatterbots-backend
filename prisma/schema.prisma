@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model QueuedGenerationExecution {
+  id                              Int                     @id @default(autoincrement())
+  generationValuesId              Int
+  generationValues                GenerationValues         @relation(fields: [generationValuesId], references: [id])
+  prompt                          String
+  createdTime                     String?
+  updatedTime                     String?
+  orderNumber                     Int
+  actualGenerationExecutionId     Int?
+}
+
+model GenerationExecution {
+  id                              Int                     @id @default(autoincrement())
+  generationValuesId              Int
+  generationValues                GenerationValues         @relation(fields: [generationValuesId], references: [id])
+  prompt                          String
+  createdTime                     String?
+  updatedTime                     String?
+  status                          String
+  result                          String
+  completedTime                   String?
+  duration                        String?
+}
+
+model GenerationValues {
+  id                              Int                     @id @default(autoincrement())
+  name                            String
+  maxNewTokens                    Int
+  doSample                        Boolean                 @default(true)
+  temperature                     String
+  topP                            String
+  typicalP                        String
+  repetitionPenalty               String
+  topK                            Int
+  minLength                       Int
+  noRepeatNgramSize               Int
+  numBeams                        Int
+  penaltyAlpha                    String
+  lengthPenalty                   String
+  earlyStopping                   Boolean                 @default(false)
+  seed                            Int                     @default(-1)
+  addBosToken                     Boolean                 @default(true)
+  truncationLength                Int                     @default(2048)
+  banEosToken                     Boolean                 @default(false)
+  skipSpecialTokens               Boolean                 @default(true)
+  generationExecutions            GenerationExecution[]
+  queuedGenerationExecutions      QueuedGenerationExecution[]
+  createdTime                     String?
+  updatedTime                     String?
+  enabled                         Boolean                 @default(false)
+}
+
+//This is a singleton, so on      ly the ID of value 0 will be used, rest ignored
+model ApplicationState {
+  id                              Int                     @id @default(autoincrement())
+  status                          String
+  currentGenerationExecutionId    Int?
+  errorState                      Boolean                 @default(false)
+  chatroomEnabled                 Boolean                 @default(false)
+  charactersCurrentlyTyping       String                  @default("")
+}
+
+//another singleton
+model ApplicationSettings {
+  id                              Int                     @id @default(autoincrement())
+  promptMaxTokens                 String?
+  openAiCompatibleEndpoint        String
+  currentHumanCharacterId         Int?
+}
+
+model Character {
+  id                              Int                     @id @default(autoincrement())
+  name                            String
+  persona                         String
+  greeting                        String
+  worldScenario                   String
+  isHuman                         Boolean
+  isEnabled                       Boolean                 @default(false)
+
+  createdTime                     String?
+  updatedTime                     String?
+}
+
+model CharacterMessage {
+  id                             Int                     @id @default(autoincrement())
+  recipientCharacterId           Int
+  sendingCharacterId             Int
+  message                        String
+
+  createdTime                    String?
+  updatedTime                    String?
+}
