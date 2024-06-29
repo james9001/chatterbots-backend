@@ -92,7 +92,7 @@ export class OpenAiCompatibleApiGeneratorService extends AbstractGeneratorServic
 				}
 			);
 
-			console.log("Response from OpenAPI compatible endpoint: ");
+			console.log("Response from OpenAI compatible endpoint: ");
 			console.log(data);
 			const output = data["choices"][0]["text"];
 

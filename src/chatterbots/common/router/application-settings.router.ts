@@ -14,8 +14,8 @@ applicationSettingsRouter.get("/settings", async (req: Request, resp: Response) 
 applicationSettingsRouter.put("/settings", async (req: Request, resp: Response) => {
 	const settings = await applicationSettingsRepository.get();
 
-	settings.promptMaxTokens = req.body.dummy;
-	settings.openAiCompatibleEndpoint = req.body.chatTslEndpoint;
+	settings.promptMaxTokens = req.body.promptMaxTokens;
+	settings.openAiCompatibleEndpoint = req.body.openAiCompatibleEndpoint;
 
 	await applicationSettingsRepository.update(settings);
 

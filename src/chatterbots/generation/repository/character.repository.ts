@@ -195,7 +195,8 @@ export class Character {
 	private async getPrompt(): Promise<string> {
 		let prompt = `CHARACTER BACKGROUND: ${this.persona} ${this.worldScenario}
 
-CHAT HISTORY:`;
+CHAT HISTORY:
+`;
 		const characterMessages = await this.getSortedCharacterMessages();
 
 		const settings = await applicationSettingsRepository.get();
@@ -249,6 +250,7 @@ CHAT HISTORY:`;
 		return sortedCharacterMessages;
 	}
 
+	// NOTE: This may not be accurate
 	private async getTokenCount(prompt: string): Promise<number> {
 		const tokeniser: any = llamaTokenizer;
 
