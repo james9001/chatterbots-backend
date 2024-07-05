@@ -1,4 +1,5 @@
 import axios from "axios";
+import https from "https";
 import { applicationSettingsRepository } from "../../common/repository/application-settings.repository";
 import { applicationStateRepository } from "../../common/repository/application-state.repository";
 import { loggingService } from "../../common/service/logging.service";
@@ -89,6 +90,9 @@ export class OpenAiCompatibleApiGeneratorService extends AbstractGeneratorServic
 					headers: {
 						"Content-Type": "application/json",
 					},
+					httpsAgent: new https.Agent({
+						rejectUnauthorized: false,
+					}),
 				}
 			);
 
