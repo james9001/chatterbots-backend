@@ -1,21 +1,21 @@
 import axios from "axios";
 import https from "https";
-import { applicationSettingsRepository } from "../../common/repository/application-settings.repository";
-import { applicationStateRepository } from "../../common/repository/application-state.repository";
-import { loggingService } from "../../common/service/logging.service";
+import { applicationSettingsRepository } from "../../../common/repository/application-settings.repository";
+import { applicationStateRepository } from "../../../common/repository/application-state.repository";
+import { loggingService } from "../../../common/service/logging.service";
 import {
 	CharacterMessage,
 	characterMessageRepository,
-} from "../repository/character-message.repository";
-import { Character } from "../repository/character.repository";
+} from "../../repository/character-message.repository";
+import { Character } from "../../repository/character.repository";
 import {
 	GenerationExecution,
 	generationExecutionRepository,
 	GenerationStatus,
-} from "../repository/generation-execution.repository";
-import { generationValuesRepository } from "../repository/generation-values.repository";
+} from "../../repository/generation-execution.repository";
+import { generationValuesRepository } from "../../repository/generation-values.repository";
 import { AbstractGeneratorService } from "./abstract-generator.service";
-import { characterMessageEventEmitter } from "./message-coordination.service";
+import { characterMessageEventEmitter } from "../message-coordination.service";
 
 let generationMutexAvailable = true;
 

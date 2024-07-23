@@ -11,7 +11,7 @@ import {
 	GenerationStatus,
 } from "../repository/generation-execution.repository";
 import { generationValuesRepository } from "../repository/generation-values.repository";
-import { openAiCompatibleApiGeneratorService } from "./openaicompatible-api-generator.service";
+import { openAiCompatibleApiGeneratorService } from "./generator/openaicompatible-api-generator.service";
 import { applicationSettingsRepository } from "../../common/repository/application-settings.repository";
 import llamaTokenizer from "../../../misc/llama-tokenizer";
 
