@@ -89,15 +89,14 @@ export class ApplicationState {
 	constructor(model?: Prisma.ApplicationState) {
 		if (model) {
 			this.id = model.id;
-			this._status = Object.entries(ApplicationStateStatus).find(([_key, val]) => {
-				return val === model.status;
-			})?.[1] as ApplicationStateStatus;
+			this._status = model.status as ApplicationStateStatus;
 			this.currentGenerationExecutionId = model.currentGenerationExecutionId
 				? model.currentGenerationExecutionId
 				: -1;
 			this.inErrorState = model.errorState;
 			this.isChatroomEnabled = model.chatroomEnabled;
 			//TODO: bug here - empty string gets parsed with the + operator into a zero, leading to a phantom CharacterCurrentlyTyping forever
+			//but why is there an empty string in there.. good question
 			this.charactersCurrentlyTyping = model.charactersCurrentlyTyping
 				.split(",")
 				.map((characterIdAsString) => {
