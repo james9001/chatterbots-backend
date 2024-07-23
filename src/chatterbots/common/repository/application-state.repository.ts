@@ -2,6 +2,7 @@ import * as Prisma from "@prisma/client";
 import { characterRepository } from "../../generation/repository/character.repository";
 import { loggingService } from "../service/logging.service";
 import { prismaWrapperService } from "../service/prisma-wrapper.service";
+import { messageCoordinationService } from "../../generation/service/message-coordination.service";
 
 export class ApplicationStateRepository {
 	prisma = new Prisma.PrismaClient();
@@ -65,7 +66,7 @@ export class ApplicationStateRepository {
 		});
 		const characters = await characterRepository.getAll();
 		for (const character of characters) {
-			void character.registerMessageEventListener();
+			void messageCoordinationService.registerMessageEventListener(character);
 		}
 	};
 

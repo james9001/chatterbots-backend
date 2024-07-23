@@ -7,7 +7,7 @@ import {
 	CharacterMessage,
 	characterMessageRepository,
 } from "../repository/character-message.repository";
-import { Character, characterMessageEventEmitter } from "../repository/character.repository";
+import { Character } from "../repository/character.repository";
 import {
 	GenerationExecution,
 	generationExecutionRepository,
@@ -15,6 +15,7 @@ import {
 } from "../repository/generation-execution.repository";
 import { generationValuesRepository } from "../repository/generation-values.repository";
 import { AbstractGeneratorService } from "./abstract-generator.service";
+import { characterMessageEventEmitter } from "./message-coordination.service";
 
 let generationMutexAvailable = true;
 
@@ -124,8 +125,10 @@ export class OpenAiCompatibleApiGeneratorService extends AbstractGeneratorServic
 			await loggingService.logAndPrint(
 				"OpenAiCompatibleApiGeneratorService - runExecution is finished"
 			);
-		} catch (err: any) {
-			await loggingService.logAndPrint(err);
+		} catch (err: unknown) {
+			if (err instanceof Error) {
+				await loggingService.logAndPrint(err);
+			}
 		}
 	}
 }

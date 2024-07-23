@@ -5,15 +5,15 @@ import {
 	CharacterMessage,
 	characterMessageRepository,
 } from "../../generation/repository/character-message.repository";
-import {
-	Character,
-	characterMessageEventEmitter,
-	characterRepository,
-} from "../../generation/repository/character.repository";
+import { Character, characterRepository } from "../../generation/repository/character.repository";
 import {
 	generationExecutionRepository,
 	GenerationStatus,
 } from "../../generation/repository/generation-execution.repository";
+import {
+	characterMessageEventEmitter,
+	messageCoordinationService,
+} from "../../generation/service/message-coordination.service";
 require("express-async-errors");
 
 export const chatroomRouter = express.Router();
@@ -78,7 +78,7 @@ chatroomRouter.post("/reset-chat", async (req: Request, resp: Response) => {
 	//Clean up over. Greeting time!
 	const allCharacters = await characterRepository.getAll();
 	for (const character of allCharacters) {
-		await character.doGreetingMessage();
+		await messageCoordinationService.doGreetingMessage(character);
 	}
 	//Send a synthetic human message after greetings so all characters are primed to respond normally and to kick things off.
 	const welcomeMessage = new CharacterMessage();
