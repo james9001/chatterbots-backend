@@ -5,15 +5,7 @@ import {
 	CharacterMessage,
 	characterMessageRepository,
 } from "../repository/character-message.repository";
-import {
-	GenerationExecution,
-	generationExecutionRepository,
-	GenerationStatus,
-} from "../repository/generation-execution.repository";
-import { generationValuesRepository } from "../repository/generation-values.repository";
-import { openAiCompatibleApiGeneratorService } from "./generator/openaicompatible-api-generator.service";
-import { applicationSettingsRepository } from "../../common/repository/application-settings.repository";
-import llamaTokenizer from "../../../misc/llama-tokenizer";
+import { chatCompletionsOpenAiCompatibleApiGeneratorService } from "./generator/chatcompletionsopenaicompatible-api-generator.service";
 
 export class MessageCoordinationService {
 	public async registerMessageEventListener(character: Character): Promise<void> {
@@ -86,82 +78,8 @@ export class MessageCoordinationService {
 	}
 
 	private async generateCharacterMessage(character: Character): Promise<void> {
-		const generationExecution = new GenerationExecution();
-		generationExecution.generationValuesId = (await generationValuesRepository.getActive()).id;
-		generationExecution.status = GenerationStatus.NOT_STARTED;
-		generationExecution.prompt = await this.getPrompt(character);
-		const savedGenerationExecution = await generationExecutionRepository.create(generationExecution);
-
 		console.log(`Character id ${character.id} aka ${character.name} is about to invoke generator`);
-		void openAiCompatibleApiGeneratorService.onStartGeneration(savedGenerationExecution, character);
-	}
-
-	private async getPrompt(character: Character): Promise<string> {
-		let prompt = `CHARACTER BACKGROUND: ${character.persona} ${character.worldScenario}
-
-CHAT HISTORY:
-`;
-		const characterMessages = await this.getSortedCharacterMessages();
-
-		const settings = await applicationSettingsRepository.get();
-		const maxNumberOfTokensForContextPrompt = +settings.promptMaxTokens - 5; //an extra 5 tokens for padding, etc
-
-		let characterMessageIndex = characterMessages.length;
-		let calculationPrompt = prompt;
-
-		while (characterMessageIndex > 0) {
-			const characterMessage = characterMessages[characterMessageIndex - 1];
-			const character = await characterRepository.getById(characterMessage.sendingCharacterId);
-			calculationPrompt += `${character.name}: ${characterMessage.message}
-`;
-			if ((await this.getTokenCount(calculationPrompt)) < maxNumberOfTokensForContextPrompt) {
-				characterMessageIndex--;
-			} else {
-				break;
-			}
-		}
-
-		const messagesThatCanFit = characterMessages.slice(characterMessageIndex);
-
-		for (const characterMessage of messagesThatCanFit) {
-			const character = await characterRepository.getById(characterMessage.sendingCharacterId);
-			prompt += `${character.name}: ${characterMessage.message}
-`;
-		}
-
-		prompt += character.name + ":";
-
-		console.log("PROMPT:");
-		console.log(prompt);
-		console.log(`Final prompt token count: ${await this.getTokenCount(prompt)}`);
-
-		return prompt;
-	}
-
-	private async getSortedCharacterMessages(): Promise<CharacterMessage[]> {
-		const allCharacterMessages = await characterMessageRepository.getAll();
-		const sortedCharacterMessages = allCharacterMessages.sort((a, b) => {
-			const aa = BigInt(a.createdTime);
-			const bb = BigInt(b.createdTime);
-			if (aa > bb) {
-				return 1;
-			} else if (aa < bb) {
-				return -1;
-			} else {
-				return 0;
-			}
-		});
-		return sortedCharacterMessages;
-	}
-
-	// NOTE: This may not be accurate
-	private async getTokenCount(prompt: string): Promise<number> {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const tokeniser: any = llamaTokenizer;
-
-		const tokenz: number[] = tokeniser.encode(prompt);
-
-		return tokenz.length;
+		void chatCompletionsOpenAiCompatibleApiGeneratorService.onGenerateCharacterMessage(character);
 	}
 
 	public async doGreetingMessage(character: Character): Promise<void> {
