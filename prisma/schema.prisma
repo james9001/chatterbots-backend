@@ -60,6 +60,7 @@ model GenerationValues {
   createdTime                     String?
   updatedTime                     String?
   enabled                         Boolean                 @default(false)
+  systemPromptAddendum            String?
 }
 
 //This is a singleton, so on      ly the ID of value 0 will be used, rest ignored

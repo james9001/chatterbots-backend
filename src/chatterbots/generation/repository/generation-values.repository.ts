@@ -66,6 +66,7 @@ export class GenerationValuesRepository {
 					skipSpecialTokens: entity.skipSpecialTokens,
 					updatedTime: "" + Date.now(),
 					enabled: entity.enabled,
+					systemPromptAddendum: entity.systemPromptAddendum,
 				},
 			});
 		});
@@ -97,6 +98,7 @@ export class GenerationValuesRepository {
 					createdTime: "" + Date.now(),
 					updatedTime: "" + Date.now(),
 					enabled: entity.enabled,
+					systemPromptAddendum: entity.systemPromptAddendum,
 				},
 			});
 			return new GenerationValues(created);
@@ -138,6 +140,8 @@ export class GenerationValues {
 
 	public enabled: boolean;
 
+	public systemPromptAddendum: string;
+
 	constructor(model?: Prisma.GenerationValues) {
 		if (model) {
 			this.id = model.id;
@@ -166,6 +170,8 @@ export class GenerationValues {
 			this.updatedTime = model.updatedTime as string;
 
 			this.enabled = model.enabled;
+
+			this.systemPromptAddendum = model.systemPromptAddendum ?? "";
 		} else {
 			this.id = -1;
 			this.name = "";
@@ -193,6 +199,8 @@ export class GenerationValues {
 			this.updatedTime = "";
 
 			this.enabled = false;
+
+			this.systemPromptAddendum = "";
 		}
 	}
 }

@@ -75,9 +75,10 @@ export class ChatCompletionsOpenAiCompatibleApiGeneratorService extends Abstract
 
 		const promptMessages: PromptMessage[] = [];
 
+		const systemPromptAddendum = (await generationValuesRepository.getActive()).systemPromptAddendum;
 		promptMessages.push({
 			role: "system",
-			content: `You are ${character.name}. ${character.persona} ${character.worldScenario} You will continue the conversation and act like the real ${character.name}.`,
+			content: `You are ${character.name}. ${character.persona} ${character.worldScenario} You will continue the conversation and act like the real ${character.name}.${systemPromptAddendum}`,
 		});
 		promptMessages.push({
 			role: "user",
@@ -198,12 +199,14 @@ export class ChatCompletionsOpenAiCompatibleApiGeneratorService extends Abstract
 			const outputWithoutIntendedOutputStart = output.substring(intendedOutputStart.length);
 			const outputSplit = outputWithoutIntendedOutputStart.split("\n");
 			if (outputSplit.length > 1) {
-				console.dir(`Response was multiline ${output}`, { depth: null });
+				console.dir(`[VALIDATE AND PARSE] - WARNING - Response was multiline!`, { depth: null });
 			}
 			const parsed = outputSplit[0].trim();
 			return parsed;
 		} else {
-			console.dir(`Response was not in the format we expected ${output}`, { depth: null });
+			console.dir(`[VALIDATE AND PARSE] - FATAL - Response was not in the format we expected!`, {
+				depth: null,
+			});
 		}
 		return "";
 	}
