@@ -78,7 +78,7 @@ export class ChatCompletionsOpenAiCompatibleApiGeneratorService extends Abstract
 		const systemPromptAddendum = (await generationValuesRepository.getActive()).systemPromptAddendum;
 		promptMessages.push({
 			role: "system",
-			content: `You are ${character.name}. ${character.persona} ${character.worldScenario} You will continue the conversation and act like the real ${character.name}.${systemPromptAddendum}`,
+			content: `This is a conversation between multiple participants. You are ${character.name}. ${character.persona} ${character.worldScenario} You will continue the conversation and act like the real ${character.name}.${systemPromptAddendum}`,
 		});
 		promptMessages.push({
 			role: "user",
@@ -127,6 +127,43 @@ export class ChatCompletionsOpenAiCompatibleApiGeneratorService extends Abstract
 		return savedGenerationExecution;
 	}
 
+	private async generateResponse(
+		character: Character,
+		generationExecution: GenerationExecution
+	): Promise<string> {
+		const generationValues = await generationValuesRepository.getActive();
+
+		const formattedRequest = {
+			messages: JSON.parse(generationExecution.prompt),
+			//mode: "instruct", //seems this is a non-standard parameter
+			model: generationValues.modelName,
+			stop: await this.getStoppingStrings(),
+			max_tokens: generationValues.maxNewTokens,
+		};
+
+		console.dir(formattedRequest, { depth: null });
+
+		const settings = await applicationSettingsRepository.get();
+		const { data } = await axios.post(
+			settings.openAiCompatibleEndpoint + "/v1/chat/completions",
+			formattedRequest,
+			{
+				headers: {
+					"Content-Type": "application/json",
+				},
+				httpsAgent: new https.Agent({
+					rejectUnauthorized: false,
+				}),
+			}
+		);
+
+		console.dir("Response from OpenAI compatible endpoint: ", { depth: null });
+		console.dir(data, { depth: null });
+		const output = data["choices"][0]["message"]["content"];
+		const parsed = await this.validateAndParseResponse(output, character);
+		return parsed;
+	}
+
 	private async runExecution(character: Character): Promise<void> {
 		const generationExecution = await this.createGenerationExecution(character);
 
@@ -134,36 +171,14 @@ export class ChatCompletionsOpenAiCompatibleApiGeneratorService extends Abstract
 			generationExecution.status = GenerationStatus.IN_PROGRESS;
 			await generationExecutionRepository.update(generationExecution);
 
-			const formattedRequest = {
-				messages: JSON.parse(generationExecution.prompt),
-				mode: "instruct",
-				model: "gpt-3.5-turbo", //hard coding this for now.. same as everyone else
-				stop: await this.getStoppingStrings(),
-			};
+			let parsed = "";
 
-			console.dir(formattedRequest, { depth: null });
-
-			const settings = await applicationSettingsRepository.get();
-			const { data } = await axios.post(
-				settings.openAiCompatibleEndpoint + "/v1/chat/completions",
-				formattedRequest,
-				{
-					headers: {
-						"Content-Type": "application/json",
-					},
-					httpsAgent: new https.Agent({
-						rejectUnauthorized: false,
-					}),
-				}
-			);
-
-			console.dir("Response from OpenAI compatible endpoint: ", { depth: null });
-			console.dir(data, { depth: null });
-			const output = data["choices"][0]["message"]["content"];
-			const parsed = await this.validateAndParseResponse(output, character);
+			while (parsed === "") {
+				parsed = await this.generateResponse(character, generationExecution);
+			}
 
 			const nowTimestamp = Date.now() + "";
-			generationExecution.result = output;
+			generationExecution.result = parsed;
 			generationExecution.duration =
 				(BigInt(+nowTimestamp) - BigInt(+generationExecution.createdTime)) / BigInt(1000) + "";
 			generationExecution.status = GenerationStatus.COMPLETE;

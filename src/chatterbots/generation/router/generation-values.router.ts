@@ -32,6 +32,7 @@ generationValuesRouter.post("/values", async (req: Request, resp: Response) => {
 		req.body.skipSpecialTokens === true || req.body.skipSpecialTokens === "true";
 	newItem.enabled = req.body.enabled === true || req.body.enabled === "true";
 	newItem.systemPromptAddendum = req.body.systemPromptAddendum;
+	newItem.modelName = req.body.modelName;
 
 	const item = await generationValuesRepository.create(newItem);
 
@@ -75,6 +76,7 @@ generationValuesRouter.put("/values", async (req: Request, resp: Response) => {
 		req.body.skipSpecialTokens === true || req.body.skipSpecialTokens === "true";
 	updateItem.enabled = req.body.enabled === true || req.body.enabled === "true";
 	updateItem.systemPromptAddendum = req.body.systemPromptAddendum;
+	updateItem.modelName = req.body.modelName;
 
 	await generationValuesRepository.update(updateItem);
 
